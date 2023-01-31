@@ -7,3 +7,11 @@ class Categories(models.Model):
 
     def __str__(self):
         return self.name
+
+
+class Genres(models.Model):
+    name = models.TextField(max_length=256)
+    slug = models.SlugField(max_length=50,unique=True)
+
+    def __str__(self):
+        return self.name

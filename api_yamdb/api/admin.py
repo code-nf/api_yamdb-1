@@ -1,3 +1,16 @@
 from django.contrib import admin
+from reviews.models import User
 
-# Register your models here.
+@admin.register(User)
+class UsersAdmin(admin.ModelAdmin):
+    list_display = (
+        'username',
+        'email',
+        'role',
+        'bio',
+        'first_name',
+        'last_name',
+    )
+    search_fields = ('username', 'role',)
+    list_filter = ('username',)
+    empty_value_display = '-пусто-'

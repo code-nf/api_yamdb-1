@@ -3,6 +3,7 @@ from rest_framework.serializers import ModelSerializer
 from reviews.models import User, Categories, Genres, Titles
 import datetime as dt
 
+
 class UsersSerializer(ModelSerializer):
     class Meta:
         model = User
@@ -30,7 +31,6 @@ class GetTokenSerializer(serializers.Serializer):
 class SignUpSerializer(serializers.Serializer):
     email = serializers.EmailField(required=True)
     username = serializers.CharField(required=True)
-
 
 
 class CategoriesSerializer(serializers.ModelSerializer):

@@ -1,7 +1,11 @@
 from rest_framework import serializers
 from rest_framework.serializers import ModelSerializer
+
+# from rest_framework.validators import UniqueValidator
 from reviews.models import User
 from reviews.validators import validate_username
+
+# from django.core.exceptions import ValidationError
 
 
 class UsersSerializer(ModelSerializer):
@@ -29,6 +33,10 @@ class GetTokenSerializer(serializers.Serializer):
 
 
 class SignUpSerializer(serializers.Serializer):
-    email = serializers.EmailField(required=True)
+    email = serializers.EmailField(
+        required=True,
+        max_length=254,)
     username = serializers.CharField(
-        required=True, validators=[validate_username])
+        required=True,
+        validators=[validate_username],
+        max_length=150)

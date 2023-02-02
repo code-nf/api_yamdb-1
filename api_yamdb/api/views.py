@@ -8,14 +8,15 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework import filters
+from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import mixins
-from .serializers import CategoriesSerializer, GenreSerializer
+from .serializers import CategoriesSerializer, GenreSerializer, TitlesReadSerializer, TitlesWriteSerializer
 from rest_framework import viewsets
 
 from api.permissions import AdminRedOnly
 from api.serializers import (GetTokenSerializer, NotAdminSerializer,
                              SignUpSerializer, UsersSerializer)
-from reviews.models import User, Categories, Genres
+from reviews.models import User, Categories, Genres, Titles
 
 
 class UsersViewSet(viewsets.ModelViewSet):
@@ -115,8 +116,9 @@ class CategoriesViewSet(WithoutPatсhPutViewSet):
     queryset = Categories.objects.all()
     serializer_class = CategoriesSerializer
     lookup_field = 'slug'
+    filter_backends = (filters.SearchFilter,)
+    search_fields = ('^name',)
     # пагинация
-    # поиск по слагу?
 
 
 class GenreViewSet(WithoutPatсhPutViewSet):
@@ -126,3 +128,15 @@ class GenreViewSet(WithoutPatсhPutViewSet):
     filter_backends = (filters.SearchFilter,)
     search_fields = ('^name',)
     # пагинация
+
+
+class TitlesViewSet(viewsets.ModelViewSet):
+    queryset = Titles.objects.all()
+    filter_backends = (DjangoFilterBackend,)
+    filterset_fields = ('name','category__slug', 'genre__slug', 'year')
+
+    def get_serializer_class(self):
+        if self.action in ["create", "update", "partial_update", "destroy"]:
+            return TitlesWriteSerializer
+
+        return TitlesReadSerializer

@@ -2,6 +2,7 @@ from django.contrib.auth.models import AbstractUser
 from django.db import models
 from .validators import validate_username
 
+
 USER = 'user'
 MODERATOR = 'moderator'
 ADMIN = 'admin'
@@ -23,7 +24,9 @@ class User(AbstractUser):
                                 null=False,)
     email = models.EmailField(verbose_name='E-Mail',
                               unique=True,
-                              max_length=254,)
+                              max_length=254,
+                              blank=False,
+                              null=False,)
     bio = models.TextField(verbose_name="О себе",
                            blank=True,
                            null=True,

@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from rest_framework.serializers import ModelSerializer
 from reviews.models import User
+from reviews.validators import validate_username
 
 
 class UsersSerializer(ModelSerializer):
@@ -29,4 +30,5 @@ class GetTokenSerializer(serializers.Serializer):
 
 class SignUpSerializer(serializers.Serializer):
     email = serializers.EmailField(required=True)
-    username = serializers.CharField(required=True)
+    username = serializers.CharField(
+        required=True, validators=[validate_username])

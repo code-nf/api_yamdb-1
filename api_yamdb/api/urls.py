@@ -1,6 +1,6 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from rest_framework import routers
+# from rest_framework import routers
 from .views import CategoriesViewSet, GenreViewSet, TitlesViewSet
 from api.views import UsersViewSet, APIGetToken, APISignup
 

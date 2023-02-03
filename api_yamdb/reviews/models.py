@@ -60,7 +60,7 @@ class User(AbstractUser):
 
 class Categories(models.Model):
     name = models.TextField(max_length=256)
-    slug = models.SlugField(max_length=50,unique=True)
+    slug = models.SlugField(max_length=50, unique=True)
 
     def __str__(self):
         return self.slug
@@ -68,7 +68,7 @@ class Categories(models.Model):
 
 class Genres(models.Model):
     name = models.TextField(max_length=256)
-    slug = models.SlugField(max_length=50,unique=True)
+    slug = models.SlugField(max_length=50, unique=True)
 
     def __str__(self):
         return self.slug

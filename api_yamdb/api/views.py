@@ -1,28 +1,26 @@
 from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import EmailMessage
-from rest_framework import permissions, status, viewsets
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework import filters, mixins, permissions, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.filters import SearchFilter
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
-from rest_framework import filters
-from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import mixins
-from .serializers import CategoriesSerializer, GenreSerializer, TitlesReadSerializer, TitlesWriteSerializer
-from rest_framework import viewsets
 
-from api.permissions import AdminRedOnly
+from .serializers import (CategoriesSerializer, GenreSerializer,
+                          TitlesReadSerializer, TitlesWriteSerializer)
+from api.permissions import IsAdminRedOnly, IsAdminOnly
 from api.serializers import (GetTokenSerializer, NotAdminSerializer,
                              SignUpSerializer, UsersSerializer)
-from reviews.models import User, Categories, Genres, Titles
+from reviews.models import Categories, Genres, Titles, User
 
 
 class UsersViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UsersSerializer
-    permission_classes = (IsAuthenticated, AdminRedOnly,)
+    permission_classes = (IsAuthenticated, IsAdminOnly,)
     lookup_field = 'username'
     filter_backends = (SearchFilter, )
     search_fields = ('username', )
@@ -114,10 +112,9 @@ class APISignup(APIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
-class WithoutPatсhPutViewSet(mixins.CreateModelMixin, mixins.ListModelMixin, 
-                            mixins.RetrieveModelMixin,
-                            mixins.DestroyModelMixin,
-                            viewsets.GenericViewSet):
+class WithoutPatсhPutViewSet(mixins.CreateModelMixin, mixins.ListModelMixin,
+                             mixins.DestroyModelMixin,
+                             viewsets.GenericViewSet):
     pass
 
 
@@ -127,6 +124,7 @@ class CategoriesViewSet(WithoutPatсhPutViewSet):
     lookup_field = 'slug'
     filter_backends = (filters.SearchFilter,)
     search_fields = ('^name',)
+    permission_classes = (IsAdminRedOnly,)
     # пагинация
 
 
@@ -136,13 +134,15 @@ class GenreViewSet(WithoutPatсhPutViewSet):
     lookup_field = 'slug'
     filter_backends = (filters.SearchFilter,)
     search_fields = ('^name',)
+    permission_classes = (IsAdminRedOnly,)
     # пагинация
 
 
 class TitlesViewSet(viewsets.ModelViewSet):
     queryset = Titles.objects.all()
     filter_backends = (DjangoFilterBackend,)
-    filterset_fields = ('name','category__slug', 'genre__slug', 'year')
+    filterset_fields = ('name', 'category__slug', 'genre__slug', 'year')
+    permission_classes = (IsAdminRedOnly,)
 
     def get_serializer_class(self):
         if self.action in ["create", "update", "partial_update", "destroy"]:

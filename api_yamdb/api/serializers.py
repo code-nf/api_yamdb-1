@@ -2,6 +2,7 @@ from rest_framework import serializers
 from rest_framework.serializers import ModelSerializer
 from reviews.models import User, Categories, Genres, Titles
 import datetime as dt
+from reviews.validators import validate_username
 
 
 class UsersSerializer(ModelSerializer):
@@ -29,8 +30,13 @@ class GetTokenSerializer(serializers.Serializer):
 
 
 class SignUpSerializer(serializers.Serializer):
-    email = serializers.EmailField(required=True)
-    username = serializers.CharField(required=True)
+    email = serializers.EmailField(
+        required=True,
+        max_length=254,)
+    username = serializers.CharField(
+        required=True,
+        validators=[validate_username],
+        max_length=150)
 
 
 class CategoriesSerializer(serializers.ModelSerializer):
@@ -66,7 +72,7 @@ class TitlesWriteSerializer(serializers.ModelSerializer):
                   'category')
 
     def get_rating(self, obj):
-        #добавить расчет по сред. арифм полю score из отзывов (Rewiews)
+
         pass
 
 
@@ -83,10 +89,9 @@ class TitlesReadSerializer(serializers.ModelSerializer):
     def validate_year(self, value):
         year = dt.date.today().year
         if not (value <= year):
-            raise serializers.ValidationError('Год произведения указан некорректно!')
+            raise serializers.ValidationError(
+                'Год произведения указан некорректно!')
         return value
-    
 
     def get_rating(self, obj):
-        #добавить расчет по сред. арифм полю score из отзывов (Rewiews)
         pass

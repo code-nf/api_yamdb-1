@@ -11,7 +11,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 
 
 from .serializers import (CategoriesSerializer, GenreSerializer,
-                          TitlesReadSerializer, TitlesWriteSerializer)
+                          TitlesReadSerializer, TitlesWriteSerializer,)
 from api.permissions import IsAdminRedOnly, IsAdminOnly
 from api.serializers import (GetTokenSerializer, NotAdminSerializer,
                              SignUpSerializer, UsersSerializer)
@@ -94,7 +94,7 @@ class APISignup(APIView):
         email_taken = User.objects.filter(email=email).exists()
         if email_taken and not username_taken:
             return Response('email занят', status=400)
-        if username_taken and not email_taken:
+        if username_taken and not email_taken:  # чужое имя
             return Response('username занят', status=400)
         user, flag = User.objects.get_or_create(
             username=username,
@@ -142,7 +142,7 @@ class GenreViewSet(WithoutPatсhPutViewSet):
 class TitlesViewSet(viewsets.ModelViewSet):
     queryset = Titles.objects.all()
     filter_backends = (DjangoFilterBackend,)
-    filterset_fields = ('name', 'category__slug', 'genre__slug', 'year')
+    filterset_fields = ('name', 'category__slug', 'genre__slug', 'year',)
     permission_classes = (IsAdminRedOnly,)
 
     def get_serializer_class(self):

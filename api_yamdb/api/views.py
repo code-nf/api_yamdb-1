@@ -9,10 +9,10 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 
-
 from .serializers import (CategoriesSerializer, GenreSerializer,
-                          TitlesReadSerializer, TitlesWriteSerializer,)
-from api.permissions import IsAdminRedOnly, IsAdminOnly
+                          TitlesReadSerializer, TitlesWriteSerializer)
+from api.filters import TitlesFilter
+from api.permissions import IsAdminOnly, IsAdminRedOnly
 from api.serializers import (GetTokenSerializer, NotAdminSerializer,
                              SignUpSerializer, UsersSerializer)
 from reviews.models import Categories, Genres, Titles, User
@@ -142,7 +142,7 @@ class GenreViewSet(WithoutPatсhPutViewSet):
 class TitlesViewSet(viewsets.ModelViewSet):
     queryset = Titles.objects.all()
     filter_backends = (DjangoFilterBackend,)
-    filterset_fields = ('name', 'category__slug', 'genre__slug', 'year',)
+    filterset_class = TitlesFilter
     permission_classes = (IsAdminRedOnly,)
 
     def get_serializer_class(self):

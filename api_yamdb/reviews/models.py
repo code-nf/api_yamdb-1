@@ -1,6 +1,10 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 from .validators import validate_username
+from django.core.validators import (
+    MaxValueValidator,
+    MinValueValidator,
+)
 
 
 USER = 'user'
@@ -83,5 +87,71 @@ class Titles(models.Model):
         Categories, on_delete=models.SET_NULL, null=True
     )
 
-    def __str__(self):
-        return self.name
+
+class Review(models.Model):
+    """Класс Отзывы."""
+
+    text = models.TextField(
+        verbose_name='Информация отзыва'
+    )
+    author = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='reviews',
+        verbose_name='Aвтор'
+    )
+    score = models.PositiveIntegerField(
+        verbose_name='Oценка',
+        validators=[
+            MinValueValidator(
+                1,
+                message='Значение 1 - 10'
+            ),
+            MaxValueValidator(
+                10,
+                message='Значение 1 - 10'
+            ),
+        ]
+    )
+    pub_date = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name='Дата публикации отзыва',
+        db_index=True
+    )
+    title = models.ForeignKey(
+        Titles,
+        on_delete=models.CASCADE,
+        related_name='reviews',
+        verbose_name='произведение',
+        null=True
+    )
+
+
+class Comment(models.Model):
+    """Класс Коментарии."""
+
+    text = models.TextField(
+        verbose_name='Информация о комментарии'
+    )
+    author = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='comments',
+        verbose_name='username автора комментария'
+    )
+    pub_date = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name='Дата публикации комментария',
+        db_index=True
+    )
+    review = models.ForeignKey(
+        Review,
+        on_delete=models.CASCADE,
+        related_name='comments',
+        verbose_name='oтзыв',
+    )
+
+    class Meta:
+        verbose_name = 'Комментарий'
+        verbose_name_plural = 'Комментарии'
+        ordering = ('-pub_date',)

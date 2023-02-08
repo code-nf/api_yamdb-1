@@ -6,6 +6,7 @@ from django.core.validators import (
     MinValueValidator,
 )
 
+
 USER = 'user'
 MODERATOR = 'moderator'
 ADMIN = 'admin'

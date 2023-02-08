@@ -1,5 +1,6 @@
 from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import EmailMessage
+from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters, mixins, permissions, status, viewsets
 from rest_framework.decorators import action
@@ -8,14 +9,16 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
+from django.db.models import Avg
 
-
-from .serializers import (CategoriesSerializer, GenreSerializer,
+from .serializers import (CategoriesSerializer, CommentSerializer,
+                          GenreSerializer, ReviewSerializer,
                           TitlesReadSerializer, TitlesWriteSerializer)
-from api.permissions import IsAdminRedOnly, IsAdminOnly
+from api.filters import TitlesFilter
+from api.permissions import IsAdminOnly, IsAdminRedOnly, IsSuperUserOrReadOnly
 from api.serializers import (GetTokenSerializer, NotAdminSerializer,
                              SignUpSerializer, UsersSerializer)
-from reviews.models import Category, Genre, Title, User
+from reviews.models import Category, Genre, Review, Title, User
 
 
 class UsersViewSet(viewsets.ModelViewSet):
@@ -94,7 +97,7 @@ class APISignup(APIView):
         email_taken = User.objects.filter(email=email).exists()
         if email_taken and not username_taken:
             return Response('email занят', status=400)
-        if username_taken and not email_taken:
+        if username_taken and not email_taken:  # чужое имя
             return Response('username занят', status=400)
         user, flag = User.objects.get_or_create(
             username=username,
@@ -140,9 +143,9 @@ class GenreViewSet(WithoutPatсhPutViewSet):
 
 
 class TitlesViewSet(viewsets.ModelViewSet):
-    queryset = Title.objects.all()
+    queryset = Title.objects.annotate(rating=Avg('reviews__score')).all()
     filter_backends = (DjangoFilterBackend,)
-    filterset_fields = ('name', 'category__slug', 'genre__slug', 'year')
+    filterset_class = TitlesFilter
     permission_classes = (IsAdminRedOnly,)
 
     def get_serializer_class(self):
@@ -150,3 +153,37 @@ class TitlesViewSet(viewsets.ModelViewSet):
             return TitlesWriteSerializer
 
         return TitlesReadSerializer
+
+
+class ReviewViewSet(viewsets.ModelViewSet):
+    serializer_class = ReviewSerializer
+    permission_classes = (IsSuperUserOrReadOnly,)
+
+    def get_queryset(self):
+        title_id = self.kwargs.get('title_id')
+        title = get_object_or_404(Title, pk=title_id)
+        return title.reviews.all()
+
+    def perform_create(self, serializer):
+        title = get_object_or_404(Title, pk=self.kwargs.get('title_id'))
+        author = self.request.user
+        serializer.save(
+            author=author,
+            title=title
+        )
+
+
+class CommentViewSet(viewsets.ModelViewSet):
+    serializer_class = CommentSerializer
+    permission_classes = (IsSuperUserOrReadOnly,)
+
+    def get_queryset(self):
+        review = get_object_or_404(Review, pk=self.kwargs.get('review_id'))
+        return review.comments.all()
+
+    def perform_create(self, serializer):
+        review = get_object_or_404(Review, pk=self.kwargs.get('review_id'))
+        serializer.save(
+            author=self.request.user,
+            review=review
+        )

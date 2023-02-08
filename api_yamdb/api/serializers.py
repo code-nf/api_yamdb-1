@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from rest_framework.serializers import ModelSerializer
-from reviews.models import User, Category, Genre, Title
+from reviews.models import User, Category, Genre, Title, Comment, Review
 import datetime as dt
 from reviews.validators import validate_username
 
@@ -77,7 +77,7 @@ class TitlesWriteSerializer(serializers.ModelSerializer):
 
 
 class TitlesReadSerializer(serializers.ModelSerializer):
-    rating = serializers.SerializerMethodField()
+    rating = serializers.IntegerField()
     genre = GenreSerializer(many=True)
     category = CategoriesSerializer()
 
@@ -95,3 +95,57 @@ class TitlesReadSerializer(serializers.ModelSerializer):
 
     def get_rating(self, obj):
         pass
+
+
+class ReviewSerializer(serializers.ModelSerializer):
+    """Сериализатор отзывов"""
+    author = serializers.SlugRelatedField(
+        slug_field='username',
+        read_only=True
+    )
+
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        representation['author'] = UsersSerializer(
+            instance.author).data['username']
+        return representation
+
+    class Meta:
+        model = Review
+        fields = (
+            'id', 'title', 'author', 'text', 'score', 'pub_date')
+        read_only_fields = ('title', 'author', 'pub_date')
+
+    def validate(self, attrs):
+        review_obj_exists = Review.objects.filter(
+            author=self.context.get('request').user,
+            title=self.context.get('view').kwargs.get('title_id')
+        ).exists()
+        if review_obj_exists and self.context.get('request').method == 'POST':
+            raise serializers.ValidationError('Вы уже оставляли отзыв')
+        return attrs
+
+
+class CommentSerializer(serializers.ModelSerializer):
+    """Сериализатор комментариев"""
+    author = serializers.SlugRelatedField(
+        slug_field='username',
+        read_only=True
+    )
+    review = serializers.SlugRelatedField(
+        slug_field='text',
+        read_only=True
+    )
+
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        representation['author'] = UsersSerializer(
+            instance.author).data['username']
+        return representation
+
+    class Meta:
+        model = Comment
+        fields = (
+            'id', 'review', 'author', 'text', 'pub_date'
+        )
+        read_only_fields = ('review', 'author', 'pub_date')

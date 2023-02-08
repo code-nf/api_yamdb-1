@@ -1,9 +1,8 @@
 from rest_framework import serializers
 from rest_framework.serializers import ModelSerializer
-from reviews.models import User, Categories, Genres, Titles
+from reviews.models import User, Categorie, Genre, Title, Comment, Review
 import datetime as dt
 from reviews.validators import validate_username
-from reviews.models import Comment, Review
 
 
 class UsersSerializer(ModelSerializer):
@@ -43,7 +42,7 @@ class SignUpSerializer(serializers.Serializer):
 class CategoriesSerializer(serializers.ModelSerializer):
 
     class Meta:
-        model = Categories
+        model = Categorie
         fields = ('name', 'slug')
         lookup_field = 'slug'
 
@@ -51,7 +50,7 @@ class CategoriesSerializer(serializers.ModelSerializer):
 class GenreSerializer(serializers.ModelSerializer):
 
     class Meta:
-        model = Genres
+        model = Genre
         fields = ('name', 'slug')
         lookup_field = 'slug'
 
@@ -59,16 +58,16 @@ class GenreSerializer(serializers.ModelSerializer):
 class TitlesWriteSerializer(serializers.ModelSerializer):
     rating = serializers.SerializerMethodField()
     genre = serializers.SlugRelatedField(
-        queryset=Genres.objects.all(),
+        queryset=Genre.objects.all(),
         slug_field='slug', many=True
     )
     category = serializers.SlugRelatedField(
-        queryset=Categories.objects.all(),
+        queryset=Categorie.objects.all(),
         slug_field='slug'
     )
 
     class Meta:
-        model = Titles
+        model = Title
         fields = ('id', 'name', 'year', 'rating', 'description', 'genre',
                   'category')
 
@@ -78,12 +77,12 @@ class TitlesWriteSerializer(serializers.ModelSerializer):
 
 
 class TitlesReadSerializer(serializers.ModelSerializer):
-    rating = serializers.SerializerMethodField()
+    rating = serializers.IntegerField()
     genre = GenreSerializer(many=True)
     category = CategoriesSerializer()
 
     class Meta:
-        model = Titles
+        model = Title
         fields = ('id', 'name', 'year', 'rating', 'description', 'genre',
                   'category')
 
@@ -100,6 +99,11 @@ class TitlesReadSerializer(serializers.ModelSerializer):
 
 class ReviewSerializer(serializers.ModelSerializer):
     """Сериализатор отзывов"""
+    author = serializers.SlugRelatedField(
+        slug_field='username',
+        read_only=True
+    )
+
     def to_representation(self, instance):
         representation = super().to_representation(instance)
         representation['author'] = UsersSerializer(
@@ -124,6 +128,15 @@ class ReviewSerializer(serializers.ModelSerializer):
 
 class CommentSerializer(serializers.ModelSerializer):
     """Сериализатор комментариев"""
+    author = serializers.SlugRelatedField(
+        slug_field='username',
+        read_only=True
+    )
+    review = serializers.SlugRelatedField(
+        slug_field='text',
+        read_only=True
+    )
+
     def to_representation(self, instance):
         representation = super().to_representation(instance)
         representation['author'] = UsersSerializer(

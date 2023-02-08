@@ -62,7 +62,7 @@ class User(AbstractUser):
         return self.username
 
 
-class Categories(models.Model):
+class Categorie(models.Model):
     name = models.TextField(max_length=256)
     slug = models.SlugField(max_length=50, unique=True)
 
@@ -70,7 +70,7 @@ class Categories(models.Model):
         return self.slug
 
 
-class Genres(models.Model):
+class Genre(models.Model):
     name = models.TextField(max_length=256)
     slug = models.SlugField(max_length=50, unique=True)
 
@@ -78,13 +78,13 @@ class Genres(models.Model):
         return self.slug
 
 
-class Titles(models.Model):
+class Title(models.Model):
     name = models.TextField(max_length=256)
     year = models.IntegerField()
     description = models.TextField(blank=True)
-    genre = models.ManyToManyField(Genres)
+    genre = models.ManyToManyField(Genre)
     category = models.ForeignKey(
-        Categories, on_delete=models.SET_NULL, null=True
+        Categorie, on_delete=models.SET_NULL, null=True
     )
 
 
@@ -119,12 +119,19 @@ class Review(models.Model):
         db_index=True
     )
     title = models.ForeignKey(
-        Titles,
+        Title,
         on_delete=models.CASCADE,
         related_name='reviews',
         verbose_name='произведение',
         null=True
     )
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=('title', 'author', ),
+                name='unique_review'
+            )]
 
 
 class Comment(models.Model):

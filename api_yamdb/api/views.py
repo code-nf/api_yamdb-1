@@ -15,7 +15,7 @@ from .serializers import (CategoriesSerializer, GenreSerializer,
 from api.permissions import IsAdminRedOnly, IsAdminOnly
 from api.serializers import (GetTokenSerializer, NotAdminSerializer,
                              SignUpSerializer, UsersSerializer)
-from reviews.models import Categories, Genres, Titles, User
+from reviews.models import Category, Genre, Title, User
 
 
 class UsersViewSet(viewsets.ModelViewSet):
@@ -120,7 +120,7 @@ class WithoutPatсhPutViewSet(mixins.CreateModelMixin, mixins.ListModelMixin,
 
 
 class CategoriesViewSet(WithoutPatсhPutViewSet):
-    queryset = Categories.objects.all()
+    queryset = Category.objects.all()
     serializer_class = CategoriesSerializer
     lookup_field = 'slug'
     filter_backends = (filters.SearchFilter,)
@@ -130,7 +130,7 @@ class CategoriesViewSet(WithoutPatсhPutViewSet):
 
 
 class GenreViewSet(WithoutPatсhPutViewSet):
-    queryset = Genres.objects.all()
+    queryset = Genre.objects.all()
     serializer_class = GenreSerializer
     lookup_field = 'slug'
     filter_backends = (filters.SearchFilter,)
@@ -140,7 +140,7 @@ class GenreViewSet(WithoutPatсhPutViewSet):
 
 
 class TitlesViewSet(viewsets.ModelViewSet):
-    queryset = Titles.objects.all()
+    queryset = Title.objects.all()
     filter_backends = (DjangoFilterBackend,)
     filterset_fields = ('name', 'category__slug', 'genre__slug', 'year')
     permission_classes = (IsAdminRedOnly,)

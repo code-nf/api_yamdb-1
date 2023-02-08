@@ -1,6 +1,6 @@
 from django.contrib import admin
 from reviews.models import User
-from reviews.models import Categories, Genres, Titles
+from reviews.models import Category, Genre, Title, Review
 
 
 @admin.register(User)
@@ -18,6 +18,7 @@ class UsersAdmin(admin.ModelAdmin):
     empty_value_display = '-пусто-'
 
 
-admin.site.register(Categories)
-admin.site.register(Genres)
-admin.site.register(Titles)
+admin.site.register(Category)
+admin.site.register(Genre)
+admin.site.register(Title)
+admin.site.register(Review)

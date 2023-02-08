@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from rest_framework.serializers import ModelSerializer
-from reviews.models import User, Categories, Genres, Titles
+from reviews.models import User, Category, Genre, Title
 import datetime as dt
 from reviews.validators import validate_username
 
@@ -42,7 +42,7 @@ class SignUpSerializer(serializers.Serializer):
 class CategoriesSerializer(serializers.ModelSerializer):
 
     class Meta:
-        model = Categories
+        model = Category
         fields = ('name', 'slug')
         lookup_field = 'slug'
 
@@ -50,7 +50,7 @@ class CategoriesSerializer(serializers.ModelSerializer):
 class GenreSerializer(serializers.ModelSerializer):
 
     class Meta:
-        model = Genres
+        model = Genre
         fields = ('name', 'slug')
         lookup_field = 'slug'
 
@@ -58,16 +58,16 @@ class GenreSerializer(serializers.ModelSerializer):
 class TitlesWriteSerializer(serializers.ModelSerializer):
     rating = serializers.SerializerMethodField()
     genre = serializers.SlugRelatedField(
-        queryset=Genres.objects.all(),
+        queryset=Genre.objects.all(),
         slug_field='slug', many=True
     )
     category = serializers.SlugRelatedField(
-        queryset=Categories.objects.all(),
+        queryset=Category.objects.all(),
         slug_field='slug'
     )
 
     class Meta:
-        model = Titles
+        model = Title
         fields = ('id', 'name', 'year', 'rating', 'description', 'genre',
                   'category')
 
@@ -82,7 +82,7 @@ class TitlesReadSerializer(serializers.ModelSerializer):
     category = CategoriesSerializer()
 
     class Meta:
-        model = Titles
+        model = Title
         fields = ('id', 'name', 'year', 'rating', 'description', 'genre',
                   'category')
 

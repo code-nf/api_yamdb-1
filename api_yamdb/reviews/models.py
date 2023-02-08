@@ -97,7 +97,7 @@ class GenreTitle(models.Model):
 
     def __str__(self):
         return f'{self.genre} {self.title}'
-    
+
 
 class Review(models.Model):
     """Класс Отзывы."""
@@ -172,4 +172,4 @@ class Comment(models.Model):
     class Meta:
         verbose_name = 'Комментарий'
         verbose_name_plural = 'Комментарии'
-        ordering = ('-pub_date',)    
+        ordering = ('-pub_date',)

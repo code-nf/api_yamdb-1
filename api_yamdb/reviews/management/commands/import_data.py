@@ -1,8 +1,16 @@
-import os
+"""
+Данный модуль импортирует csv-файлы в базу данных.
+Для запуска программы введите команду python manage.py import_data.
+"""
+
 import csv
+import os
+
 from django.core.management import BaseCommand
-from reviews.models import Category, Genre, User
-from reviews.models import Title, GenreTitle, Review, Comment
+
+from reviews.models import (Category, Comment, Genre, GenreTitle, Review,
+                            Title, User)
+
 from api_yamdb.settings import CSV_FILE_PATH
 
 

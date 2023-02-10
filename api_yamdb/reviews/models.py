@@ -1,11 +1,8 @@
 from django.contrib.auth.models import AbstractUser
+from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
-from .validators import validate_username
-from django.core.validators import (
-    MaxValueValidator,
-    MinValueValidator,
-)
 
+from .validators import validate_username, validate_year
 
 USER = 'user'
 MODERATOR = 'moderator'
@@ -21,29 +18,30 @@ ROLES = (
 
 
 class User(AbstractUser):
-    username = models.CharField(validators=(validate_username,),
+    username = models.CharField(verbose_name='Пользователь',
+                                validators=(validate_username,),
                                 max_length=150,
                                 unique=True,
                                 blank=False,
-                                null=False,)
+                                null=False)
     email = models.EmailField(verbose_name='E-Mail',
                               unique=True,
                               max_length=254,
                               blank=False,
-                              null=False,)
-    bio = models.TextField(verbose_name="О себе",
+                              null=False)
+    bio = models.TextField(verbose_name='О себе',
                            blank=True,
-                           null=True,
-                           max_length=300,)
-    first_name = models.CharField('имя',
+                           max_length=300)
+    first_name = models.CharField(verbose_name='имя',
                                   max_length=150,
                                   blank=True)
-    last_name = models.CharField('фамилия',
+    last_name = models.CharField(verbose_name='фамилия',
                                  max_length=150,
                                  blank=True)
     role = models.CharField(verbose_name='Уровень доступа',
                             choices=ROLES,
                             default=USER,
+                            blank=True,
                             max_length=50)
 
     @property
@@ -61,39 +59,73 @@ class User(AbstractUser):
     def __str__(self):
         return self.username
 
+    class Meta:
+        verbose_name = 'Пользователь'
+        verbose_name_plural = 'Пользователи'
+
+    def __str__(self):
+        return self.username
+
 
 class Category(models.Model):
-    name = models.TextField(max_length=256)
-    slug = models.SlugField(max_length=50, unique=True)
+    name = models.TextField(max_length=256,
+                            verbose_name='Название категории')
+    slug = models.SlugField(unique=True,
+                            verbose_name='Слаг категории')
+
+    class Meta:
+        verbose_name = 'Категория'
+        verbose_name_plural = 'Категории'
 
     def __str__(self):
         return self.slug
 
 
 class Genre(models.Model):
-    name = models.TextField(max_length=256)
-    slug = models.SlugField(max_length=50, unique=True)
+    name = models.TextField(max_length=256,
+                            verbose_name='Название жанра')
+    slug = models.SlugField(unique=True,
+                            verbose_name='Слаг жанра')
+
+    class Meta:
+        verbose_name = 'Жанр'
+        verbose_name_plural = 'Жанры'
 
     def __str__(self):
         return self.slug
 
 
 class Title(models.Model):
-    name = models.TextField(max_length=256)
-    year = models.IntegerField()
-    description = models.TextField(blank=True)
-    genre = models.ManyToManyField(Genre, through='GenreTitle')
-    category = models.ForeignKey(
-        Category, on_delete=models.SET_NULL, null=True
-    )
+    name = models.TextField(max_length=256,
+                            verbose_name='Название')
+    year = models.PositiveIntegerField(db_index=True,
+                                       verbose_name='Год',
+                                       validators=(validate_year,))
+    description = models.TextField(blank=True,
+                                   verbose_name='Описание')
+    genre = models.ManyToManyField(Genre,
+                                   through='GenreTitle',
+                                   verbose_name='Жанр')
+    category = models.ForeignKey(Category,
+                                 on_delete=models.SET_NULL,
+                                 null=True,
+                                 verbose_name='Категория')
+
+    class Meta:
+        verbose_name = 'Произведение'
+        verbose_name_plural = 'Произведения'
 
     def __str__(self):
         return self.name
 
 
 class GenreTitle(models.Model):
-    genre = models.ForeignKey(Genre, on_delete=models.CASCADE)
-    title = models.ForeignKey(Title, on_delete=models.CASCADE)
+    genre = models.ForeignKey(Genre,
+                              on_delete=models.CASCADE,
+                              verbose_name='Жанр')
+    title = models.ForeignKey(Title,
+                              on_delete=models.CASCADE,
+                              verbose_name='Название')
 
     def __str__(self):
         return f'{self.genre} {self.title}'
@@ -144,6 +176,9 @@ class Review(models.Model):
                 name='unique_review'
             )]
 
+    def __str__(self):
+        return self.text
+
 
 class Comment(models.Model):
     """Класс Коментарии."""
@@ -173,3 +208,6 @@ class Comment(models.Model):
         verbose_name = 'Комментарий'
         verbose_name_plural = 'Комментарии'
         ordering = ('-pub_date',)
+
+    def __str__(self):
+        return self.text

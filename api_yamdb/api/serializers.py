@@ -1,24 +1,29 @@
 from rest_framework import serializers
-from rest_framework.serializers import ModelSerializer
-from reviews.models import User, Category, Genre, Title, Comment, Review
-import datetime as dt
+
+from reviews.models import Category, Comment, Genre, Review, Title, User
 from reviews.validators import validate_username
 
 
-class UsersSerializer(ModelSerializer):
+class UsersSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = (
-            'username', 'bio', 'first_name',
-            'last_name', 'email', 'role')
+        fields = ('username',
+                  'bio',
+                  'first_name',
+                  'last_name',
+                  'email',
+                  'role')
 
 
 class NotAdminSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = (
-            'username', 'email', 'first_name',
-            'last_name', 'bio', 'role')
+        fields = ('username',
+                  'email',
+                  'first_name',
+                  'last_name',
+                  'bio',
+                  'role')
         read_only_fields = ('role',)
 
 
@@ -56,7 +61,6 @@ class GenreSerializer(serializers.ModelSerializer):
 
 
 class TitlesWriteSerializer(serializers.ModelSerializer):
-    rating = serializers.SerializerMethodField()
     genre = serializers.SlugRelatedField(
         queryset=Genre.objects.all(),
         slug_field='slug', many=True
@@ -68,33 +72,28 @@ class TitlesWriteSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Title
-        fields = ('id', 'name', 'year', 'rating', 'description', 'genre',
+        fields = ('id',
+                  'name',
+                  'year',
+                  'description',
+                  'genre',
                   'category')
-
-    def get_rating(self, obj):
-
-        pass
 
 
 class TitlesReadSerializer(serializers.ModelSerializer):
-    rating = serializers.IntegerField()
-    genre = GenreSerializer(many=True)
-    category = CategoriesSerializer()
+    rating = serializers.IntegerField(read_only=True)
+    genre = GenreSerializer(many=True, read_only=True)
+    category = CategoriesSerializer(read_only=True)
 
     class Meta:
         model = Title
-        fields = ('id', 'name', 'year', 'rating', 'description', 'genre',
+        fields = ('id',
+                  'name',
+                  'year',
+                  'rating',
+                  'description',
+                  'genre',
                   'category')
-
-    def validate_year(self, value):
-        year = dt.date.today().year
-        if not (value <= year):
-            raise serializers.ValidationError(
-                'Год произведения указан некорректно!')
-        return value
-
-    def get_rating(self, obj):
-        pass
 
 
 class ReviewSerializer(serializers.ModelSerializer):
@@ -112,9 +111,15 @@ class ReviewSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Review
-        fields = (
-            'id', 'title', 'author', 'text', 'score', 'pub_date')
-        read_only_fields = ('title', 'author', 'pub_date')
+        fields = ('id',
+                  'title',
+                  'author',
+                  'text',
+                  'score',
+                  'pub_date')
+        read_only_fields = ('title',
+                            'author',
+                            'pub_date')
 
     def validate(self, attrs):
         review_obj_exists = Review.objects.filter(
@@ -145,7 +150,11 @@ class CommentSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Comment
-        fields = (
-            'id', 'review', 'author', 'text', 'pub_date'
-        )
-        read_only_fields = ('review', 'author', 'pub_date')
+        fields = ('id',
+                  'review',
+                  'author',
+                  'text',
+                  'pub_date')
+        read_only_fields = ('review',
+                            'author',
+                            'pub_date')

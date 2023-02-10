@@ -1,23 +1,16 @@
-from django.urls import path, include
+from django.urls import include, path
 from rest_framework.routers import DefaultRouter
-# from rest_framework import routers
-from .views import (CategoriesViewSet,
-                    GenreViewSet,
-                    TitlesViewSet,
-                    ReviewViewSet,
-                    CommentViewSet,
-                    UsersViewSet,
-                    APIGetToken,
-                    APISignup)
 
+from .views import (APIGetToken, APISignup, CategoriesViewSet, CommentViewSet,
+                    GenreViewSet, ReviewViewSet, TitlesViewSet, UsersViewSet)
 
 app_name = 'api'
 
 v1_router = DefaultRouter()
-v1_router.register(r'users', UsersViewSet, basename='users')
-v1_router.register(r'categories', CategoriesViewSet, basename='categories')
-v1_router.register(r'genres', GenreViewSet, basename='genres')
-v1_router.register(r'titles', TitlesViewSet, basename='titles')
+v1_router.register('users', UsersViewSet, basename='users')
+v1_router.register('categories', CategoriesViewSet, basename='categories')
+v1_router.register('genres', GenreViewSet, basename='genres')
+v1_router.register('titles', TitlesViewSet, basename='titles')
 v1_router.register(r'titles/(?P<title_id>\d+)/reviews',
                    ReviewViewSet,
                    basename='reviews')

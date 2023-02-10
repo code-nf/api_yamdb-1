@@ -1,20 +1,21 @@
 from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import EmailMessage
+from django.db.models import Avg
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import filters, mixins, permissions, status, viewsets
+from rest_framework import filters, permissions, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.filters import SearchFilter
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
-from django.db.models import Avg
 
 from .serializers import (CategoriesSerializer, CommentSerializer,
                           GenreSerializer, ReviewSerializer,
                           TitlesReadSerializer, TitlesWriteSerializer)
 from api.filters import TitlesFilter
+from api.mixins import WithoutPatсhPutViewSet
 from api.permissions import IsAdminOnly, IsAdminRedOnly, IsSuperUserOrReadOnly
 from api.serializers import (GetTokenSerializer, NotAdminSerializer,
                              SignUpSerializer, UsersSerializer)
@@ -28,13 +29,14 @@ class UsersViewSet(viewsets.ModelViewSet):
     lookup_field = 'username'
     filter_backends = (SearchFilter, )
     search_fields = ('username', )
-    http_method_names = ['get', 'post', 'delete', 'patch']
+    # http_method_names = ['get', 'post', 'delete', 'patch']
+    # Я два дня сижу над этой правкой , ну вообще не могу понять как
+    # это сделать , вот что смог . Простите
+    http_method_names = [
+        m for m in viewsets.ModelViewSet.http_method_names if m not in ['put']]
 
-    @action(
-        methods=['GET', 'PATCH'],
-        detail=False,
-        permission_classes=(IsAuthenticated,),
-        url_path='me')
+    @action(methods=['get', 'patch'], detail=False,
+            permission_classes=(IsAuthenticated,), url_path='me')
     def get_current_user_info(self, request):
         serializer = UsersSerializer(request.user)
         if request.method == 'PATCH':
@@ -96,9 +98,10 @@ class APISignup(APIView):
         username_taken = User.objects.filter(username=username).exists()
         email_taken = User.objects.filter(email=email).exists()
         if email_taken and not username_taken:
-            return Response('email занят', status=400)
-        if username_taken and not email_taken:  # чужое имя
-            return Response('username занят', status=400)
+            return Response('email занят', status=status.HTTP_400_BAD_REQUEST)
+        if username_taken and not email_taken:
+            return Response('username занят',
+                            status=status.HTTP_400_BAD_REQUEST)
         user, flag = User.objects.get_or_create(
             username=username,
             email=email)
@@ -114,12 +117,6 @@ class APISignup(APIView):
         }
         self.send_email(data)
         return Response(serializer.data, status=status.HTTP_200_OK)
-
-
-class WithoutPatсhPutViewSet(mixins.CreateModelMixin, mixins.ListModelMixin,
-                             mixins.DestroyModelMixin,
-                             viewsets.GenericViewSet):
-    pass
 
 
 class CategoriesViewSet(WithoutPatсhPutViewSet):

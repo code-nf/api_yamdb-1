@@ -9,7 +9,7 @@ load_dotenv()
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.getenv('SECRET_KEY", default="SUP3R-S3CR3T-K3Y-F0R-MY-PR0J3CT')
+SECRET_KEY = os.getenv('SECRET_KEY', default='++s4p8%m9_hylnw*(+$f4+n46)^01_)ibpqt3-j_-!@srfg63)')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 
